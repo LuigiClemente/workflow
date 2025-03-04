@@ -57,24 +57,24 @@ Our frontend applications are deployed via **Vercel**, enabling multiple website
 - This configuration simplifies **routing, authentication, and API access** while ensuring a seamless user experience.  
 
 ```mermaid
-flowchart TD
+flowchart TB
     %% Define Colors
     classDef vercelStyle fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff;
     classDef appStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
-    classDef securityStyle fill:#F44336,stroke:#333,stroke-width:2px,color:#fff;
     classDef routingStyle fill:#FFC107,stroke:#333,stroke-width:2px,color:#000;
+    classDef securityStyle fill:#F44336,stroke:#333,stroke-width:2px,color:#fff;
 
     %% Frontend Deployment via Vercel
-    subgraph Vercel_Deployment["Vercel Frontend Deployment"]
-        Vercel["Vercel (Unified Frontend & Routing)"]:::vercelStyle
-        JSONConfig["Vercel JSON Config (Proxy & Routing)"]:::routingStyle
+    subgraph Vercel_Deployment["🚀 2. Frontend Deployment & Application Routing"]
+        Vercel["Vercel (Unified Frontend Deployment)"]:::vercelStyle
+        JSONConfig["Vercel JSON Config (Domain Proxy & Routing)"]:::routingStyle
     end
 
     %% Applications Routed via Vercel
-    subgraph Applications["Applications Under Unified Domain"]
-        ERPNext["ERPNext (Business & Operations)"]:::appStyle
+    subgraph Applications["🌍 Applications Routed Under Unified Domain"]
+        ERPNext["ERPNext (Business Management)"]:::appStyle
         Saleor["Saleor (E-commerce & Checkout)"]:::appStyle
-        Vendure["Vendure (Subscription Management)"]:::appStyle
+        Vendure["Vendure (Subscription Plans)"]:::appStyle
         Zammad["Zammad (Customer Support)"]:::appStyle
         QRCodeApp["QR Code App (Vendure Onboarding)"]:::appStyle
         MultiUserApp["Multi-User App (Subscription Extension)"]:::appStyle
@@ -83,16 +83,18 @@ flowchart TD
     end
 
     %% Security Layer
-    subgraph Security["Authentication & API Security"]
+    subgraph Security["🔒 Authentication & API Security"]
         APISIX["APISIX API Gateway (Access Control)"]:::securityStyle
-        Keycloak["Keycloak (User Authentication)"]:::securityStyle
+        Keycloak["Keycloak (Centralized Authentication)"]:::securityStyle
     end
 
     %% Connections
-    Vercel -->|Manages Frontend Deployment| Applications
+    Vercel -->|Deploys & Manages| Applications
     JSONConfig -->|Configures Routing & Proxies Requests| Vercel
+    Applications -->|Requests Authentication| Keycloak
     Applications -->|Sends API Requests| APISIX
-    APISIX -->|Enforces Security & Access Control| Keycloak
+    APISIX -->|Validates & Secures Traffic| Keycloak
+
 
 ```
 ---
