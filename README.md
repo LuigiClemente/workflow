@@ -7,18 +7,44 @@ Our **system architecture** is designed to integrate multiple applications seaml
 ```mermaid
 flowchart TD
     %% Define Colors
-    classDef startStyle fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff;
-    classDef processStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef appStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef securityStyle fill:#F44336,stroke:#333,stroke-width:2px,color:#fff;
+    classDef syncStyle fill:#FFC107,stroke:#333,stroke-width:2px,color:#000;
+    classDef infraStyle fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff;
 
-    %% Frontend Deployment
-    start((System Start)) --> frontendDeployment["Frontend Deployment via Vercel"]
-    class start startStyle
-    class frontendDeployment processStyle
+    %% System Components
+    subgraph System_Architecture["System Architecture"]
+        subgraph Applications
+            ERPNext["ERPNext (Business & Operations)"]:::appStyle
+            Saleor["Saleor (E-commerce & Checkout)"]:::appStyle
+            Vendure["Vendure (Subscription Management)"]:::appStyle
+            Zammad["Zammad (Customer Support)"]:::appStyle
+            QRCodeApp["QR Code App (Vendure Onboarding)"]:::appStyle
+            MultiUserApp["Multi-User App (Subscription Extension)"]:::appStyle
+            BlogsLive["Blogs Live Server (Content Management)"]:::appStyle
+            BlogsStatic["Blogs Static Server (S3 Publishing)"]:::appStyle
+        end
 
-    frontendDeployment --> proxyRouting["Proxy Routing via Vercel JSON Configuration"]
-    proxyRouting --> multipleApps["Multiple Applications Functioning as One"]
-    class proxyRouting processStyle
-    class multipleApps processStyle
+        subgraph Synchronization
+            Temporal["Temporal Workflows (Process Automation)"]:::syncStyle
+        end
+
+        subgraph Security
+            APISIX["APISIX API Gateway (Traffic & Authentication Control)"]:::securityStyle
+        end
+
+        subgraph Infrastructure
+            Vercel["Vercel (Frontend Deployment & Routing)"]:::infraStyle
+        end
+    end
+
+    %% Connections
+    Vercel -->|Routes Requests| Applications
+    Applications -->|Sync & Automate| Temporal
+    Temporal -->|Ensures Workflow Execution| Applications
+    Applications -->|API Requests| APISIX
+    APISIX -->|Secures & Filters Traffic| Applications
+
 
 ```
 ---
@@ -33,19 +59,40 @@ Our frontend applications are deployed via **Vercel**, enabling multiple website
 ```mermaid
 flowchart TD
     %% Define Colors
-    classDef processStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef vercelStyle fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff;
+    classDef appStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef securityStyle fill:#F44336,stroke:#333,stroke-width:2px,color:#fff;
+    classDef routingStyle fill:#FFC107,stroke:#333,stroke-width:2px,color:#000;
 
-    %% Applications in the System
-    applications{"Applications in Use"}
-    class applications processStyle
+    %% Frontend Deployment via Vercel
+    subgraph Vercel_Deployment["Vercel Frontend Deployment"]
+        Vercel["Vercel (Unified Frontend & Routing)"]:::vercelStyle
+        JSONConfig["Vercel JSON Config (Proxy & Routing)"]:::routingStyle
+    end
 
-    applications --> erpnext["ERPNext - Business Management & Seller Commissions"]
-    applications --> saleor["Saleor - Product Purchases & Checkout"]
-    applications --> vendure["Vendure - Subscription & Multi-User Plans"]
-    applications --> zammad["Zammad - Customer Support & Ticketing"]
-    applications --> qrCodeApp["QR Code App - Subscription Plan Registration"]
-    applications --> multiUserApp["Multi-User App - Extends Vendure"]
-    applications --> blogsApp["Blogs App - Post Management"]
+    %% Applications Routed via Vercel
+    subgraph Applications["Applications Under Unified Domain"]
+        ERPNext["ERPNext (Business & Operations)"]:::appStyle
+        Saleor["Saleor (E-commerce & Checkout)"]:::appStyle
+        Vendure["Vendure (Subscription Management)"]:::appStyle
+        Zammad["Zammad (Customer Support)"]:::appStyle
+        QRCodeApp["QR Code App (Vendure Onboarding)"]:::appStyle
+        MultiUserApp["Multi-User App (Subscription Extension)"]:::appStyle
+        BlogsLive["Blogs Live Server (Content Management)"]:::appStyle
+        BlogsStatic["Blogs Static Server (S3 Publishing)"]:::appStyle
+    end
+
+    %% Security Layer
+    subgraph Security["Authentication & API Security"]
+        APISIX["APISIX API Gateway (Access Control)"]:::securityStyle
+        Keycloak["Keycloak (User Authentication)"]:::securityStyle
+    end
+
+    %% Connections
+    Vercel -->|Manages Frontend Deployment| Applications
+    JSONConfig -->|Configures Routing & Proxies Requests| Vercel
+    Applications -->|Sends API Requests| APISIX
+    APISIX -->|Enforces Security & Access Control| Keycloak
 
 ```
 ---
@@ -73,19 +120,48 @@ The **Blogs App** consists of two **Next.js applications** for content creation 
 ```mermaid
 flowchart TD
     %% Define Colors
-    classDef processStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
-    classDef storageStyle fill:#9C27B0,stroke:#333,stroke-width:2px,color:#fff;
+    classDef businessStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef supportStyle fill:#FFC107,stroke:#333,stroke-width:2px,color:#000;
+    classDef blogStyle fill:#9C27B0,stroke:#333,stroke-width:2px,color:#fff;
 
-    %% Blog Applications
-    blogsApp["Blogs App - Post Management"]
-    class blogsApp processStyle
+    %% Business & Sales Applications
+    subgraph Business_&_Sales["3.1 Business & Sales Applications"]
+        ERPNext["ERPNext (Order Management, Seller & Affiliate Commissions)"]:::businessStyle
+        Saleor["Saleor (E-commerce & Checkout)"]:::businessStyle
+        Vendure["Vendure (Subscription & Multi-User Plans)"]:::businessStyle
+    end
 
-    blogsApp --> liveServer["Live Server - Users Manage Posts"]
-    blogsApp --> staticServer["Static Server - Publishes Posts to S3"]
-    staticServer --> temporalSync["Temporal - Syncs Live & Static Servers"]
-    class liveServer processStyle
-    class staticServer storageStyle
-    class temporalSync processStyle
+    %% Customer Support & User Management
+    subgraph Support_&_User_Management["3.2 Customer Support & User Management"]
+        Zammad["Zammad (Customer Support & Ticketing)"]:::supportStyle
+        QRCodeApp["QR Code App (Vendure Onboarding)"]:::supportStyle
+        MultiUserApp["Multi-User App (Subscription Extension)"]:::supportStyle
+    end
+
+    %% Blog Management
+    subgraph Blog_Management["3.3 Blog Management"]
+        BlogsLive["Blogs Live Server (Post Management)"]:::blogStyle
+        BlogsStatic["Blogs Static Server (S3 Publishing)"]:::blogStyle
+        Temporal["Temporal (Syncs Live & Static Servers)"]:::blogStyle
+    end
+
+    %% Connections
+    Saleor -->|Processes Sales| ERPNext
+    Saleor -->|Syncs Subscription Purchases| Vendure
+    Saleor -->|Links Purchases| QRCodeApp
+
+    QRCodeApp -->|Registers Users to| Vendure
+    Vendure -->|Handles Subscriptions for| MultiUserApp
+    MultiUserApp -->|Extends Subscription Access| Vendure
+
+    ERPNext -->|Tracks Orders & Commissions| Zammad
+    Zammad -->|Manages Support for Users| ERPNext
+    Zammad -->|Handles Customer Inquiries| Saleor
+
+    BlogsLive -->|Syncs Content to| BlogsStatic
+    Temporal -->|Automates Blog Syncing| BlogsLive
+    Temporal -->|Ensures Data Consistency| BlogsStatic
+
 
 ```
 ---
@@ -110,19 +186,42 @@ flowchart TD
 ```mermaid
 flowchart TD
     %% Define Colors
-    classDef processStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef authStyle fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff;
+    classDef securityStyle fill:#F44336,stroke:#333,stroke-width:2px,color:#fff;
+    classDef syncStyle fill:#FFC107,stroke:#333,stroke-width:2px,color:#000;
 
-    %% Authentication & Security
-    authentication{"Authentication & Security"}
-    class authentication processStyle
+    %% Centralized Authentication
+    subgraph Authentication["4.1 Centralized Authentication via Keycloak"]
+        Keycloak["Keycloak (Identity & Access Management)"]:::authStyle
+        OIDC["OpenID Connect (Enforces Authentication Policies)"]:::authStyle
+    end
 
-    authentication --> keycloak["Keycloak - Centralized Authentication"]
-    authentication --> apisix["APISIX - API Gateway (Restricts Unauthorized Access)"]
-    authentication --> temporalSecurity["Temporal - Synchronization & Role Management"]
+    %% API Security Layer
+    subgraph API_Security["4.2 API Security with APISIX"]
+        APISIX["APISIX API Gateway (Traffic Filtering & Authentication)"]:::securityStyle
+        Vercel["Vercel (Frontend Application Source)"]:::securityStyle
+    end
 
-    keycloak --> authFlow["Users Must Authenticate via Keycloak"]
-    temporalSecurity --> webhookProcessing["Handles Webhooks & Application Sync"]
-    temporalSecurity --> blogSync["Syncs Blog Posts"]
+    %% Synchronization & Workflow Automation
+    subgraph Synchronization["4.3 Synchronization with Temporal"]
+        Temporal["Temporal (Real-Time Workflow Management)"]:::syncStyle
+        Webhooks["Webhook Processing (Inter-App Communication)"]:::syncStyle
+        RoleSync["Role Synchronization (Ensures Consistent User Roles)"]:::syncStyle
+        BlogSync["Blog Synchronization (Live & Static Servers)"]:::syncStyle
+    end
+
+    %% Connections
+    Vercel -->|Authenticated Requests| APISIX
+    APISIX -->|Filters Traffic| Keycloak
+    Keycloak -->|Verifies Users via| OIDC
+    OIDC -->|Grants Access| APISIX
+    APISIX -->|Allows API Requests| Temporal
+
+    Temporal -->|Manages Roles| RoleSync
+    Temporal -->|Processes Events| Webhooks
+    Temporal -->|Syncs Blog Content| BlogSync
+    BlogSync -->|Ensures Content Consistency| Webhooks
+
 
 ```
 ---
@@ -141,15 +240,34 @@ flowchart TD
 ```mermaid
 flowchart TD
     %% Define Colors
-    classDef processStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef purchaseStyle fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff;
+    classDef syncStyle fill:#FFC107,stroke:#333,stroke-width:2px,color:#000;
+    classDef userStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
 
-    %% User Onboarding
-    onboarding["User Onboarding & Purchases"]
-    class onboarding processStyle
+    %% Account Creation & Purchases
+    subgraph Account_Creation["5.1 Account Creation & Purchases"]
+        User["User Registers & Purchases a Product"]:::userStyle
+        Saleor["Saleor (E-commerce & Checkout)"]:::purchaseStyle
+        Stripe["Stripe (Payment Processing)"]:::purchaseStyle
+        ERPNext["ERPNext (Order History & Synchronization)"]:::syncStyle
+    end
 
-    onboarding --> createAccount["User Registers & Purchases via Saleor"]
-    createAccount --> stripePayments["Stripe - Payment Processing"]
-    createAccount --> syncERPNext["Sync Purchase Records with ERPNext"]
+    %% User Synchronization
+    subgraph User_Synchronization["5.2 User Synchronization Across Applications"]
+        Zammad["Zammad (Customer Support & Ticketing)"]:::syncStyle
+        QRCodeApp["QR Code App (Vendure Onboarding)"]:::syncStyle
+        Vendure["Vendure (Subscription Management)"]:::syncStyle
+    end
+
+    %% Connections
+    User -->|Purchases Product| Saleor
+    Saleor -->|Processes Payment| Stripe
+    Saleor -->|Records Purchase| ERPNext
+    ERPNext -->|Synchronizes Order Data| Zammad
+    Saleor -->|Creates User Account| ERPNext
+    ERPNext -->|Registers User| Zammad
+    Saleor -->|User Requires QR Code Registration| QRCodeApp
+    QRCodeApp -->|Completes Onboarding| Vendure
 
 ```
 ---
@@ -175,15 +293,28 @@ To access Vendure, users must complete the **QR Code onboarding process**:
 ```mermaid
 flowchart TD
     %% Define Colors
-    classDef processStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef qrStyle fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff;
+    classDef authStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef processStyle fill:#FFC107,stroke:#333,stroke-width:2px,color:#000;
+    classDef supportStyle fill:#9C27B0,stroke:#333,stroke-width:2px,color:#fff;
+    classDef roleStyle fill:#F44336,stroke:#333,stroke-width:2px,color:#fff;
 
-    %% User Synchronization
-    userSync{"User Synchronization Across Apps"}
-    class userSync processStyle
+    %% QR Code Onboarding Process
+    subgraph QR_Code_Onboarding["6. Vendure Account Creation (QR Code-Based Flow)"]
+        ScanQR["1. Scan QR Code"]:::qrStyle
+        UserAuth["2. Login or Register"]:::authStyle
+        AcceptAgreement["3. Accept Service Agreement"]:::processStyle
+        ZammadTicket["4. Zammad Ticket Generated"]:::supportStyle
+        CompleteSteps["5. Complete Required Steps (Forms, Verification)"]:::processStyle
+        AssignRole["6. Assign Vendure Role & Grant Access"]:::roleStyle
+    end
 
-    userSync --> syncERPNext["User Synced to ERPNext"]
-    userSync --> syncZammad["User Auto-Registered in Zammad"]
-    userSync --> vendureOnboarding["Vendure Onboarding via QR Code"]
+    %% Connections
+    ScanQR -->|Prompt Login/Register| UserAuth
+    UserAuth -->|Verify Account| AcceptAgreement
+    AcceptAgreement -->|Assign Temporary Role| ZammadTicket
+    ZammadTicket -->|Track Onboarding| CompleteSteps
+    CompleteSteps -->|Finalize Registration| AssignRole
 
 ```
 ---
@@ -208,27 +339,34 @@ Users are **granted access** based on their role, which determines their privile
 ```mermaid
 flowchart TD
     %% Define Colors
-    classDef processStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
-    classDef decisionStyle fill:#FFC107,stroke:#333,stroke-width:2px,color:#000;
-    classDef errorStyle fill:#F44336,stroke:#333,stroke-width:2px,color:#fff;
+    classDef roleStyle fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff;
+    classDef planStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef featureStyle fill:#FFC107,stroke:#333,stroke-width:2px,color:#000;
 
-    %% Vendure Account Creation
-    vendureOnboarding["Vendure Onboarding via QR Code"]
-    class vendureOnboarding processStyle
+    %% Role Progression
+    subgraph Role_Progression["7.1 Role Progression"]
+        TempRole["Temporary Role (Limited Access)"]:::roleStyle
+        BasicPlan["Basic Plan (Standard Access)"]:::roleStyle
+        ProPlan["Pro Plan (AI-Assisted Support)"]:::roleStyle
+        FamilyPlan["Family Plan (Multi-User Access)"]:::roleStyle
+    end
 
-    vendureOnboarding --> scanQRCode["Scan QR Code for Registration"]
-    scanQRCode --> loginPrompt{"Prompt User to Log In or Sign Up?"}
-    class loginPrompt decisionStyle
+    %% Subscription Management & Features
+    subgraph Subscription_Management["7.2 Subscription Management & Upgrades"]
+        BasicFeatures["Standard Service Access"]:::featureStyle
+        ProFeatures["AI-Assisted Support in Zammad"]:::featureStyle
+        FamilyFeatures["Multi-User Access & Pro-Level Benefits"]:::featureStyle
+    end
 
-    loginPrompt -->|"No"| errorResponse["Error: User Must Log In"]
-    loginPrompt -->|"Yes"| acceptService["User Accepts Service Agreement"]
-    class errorResponse errorStyle
-    class acceptService processStyle
+    %% Connections
+    TempRole -->|Subscription Activated| BasicPlan
+    BasicPlan -->|Upgrade| ProPlan
+    ProPlan -->|Upgrade| FamilyPlan
 
-    acceptService --> tempRole["Temporary Role Assigned"]
-    tempRole --> zammadTicket["Zammad Ticket Created for Onboarding"]
-    zammadTicket --> completeSteps["User Completes Registration Steps"]
-    completeSteps --> assignVendureRole["User Assigned Final Vendure Role"]
+    BasicPlan -->|Provides| BasicFeatures
+    ProPlan -->|Includes| ProFeatures
+    FamilyPlan -->|Grants| FamilyFeatures
+
 
 ```
 ---
@@ -255,20 +393,33 @@ flowchart TD
 ```mermaid
 flowchart TD
     %% Define Colors
-    classDef processStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
-    classDef decisionStyle fill:#FFC107,stroke:#333,stroke-width:2px,color:#000;
+    classDef trackingStyle fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff;
+    classDef commissionStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef payoutStyle fill:#FFC107,stroke:#333,stroke-width:2px,color:#000;
 
-    %% Subscription & Role Management
-    assignVendureRole --> roleBasedAccess{"Role-Based Access & Subscription Management"}
-    class roleBasedAccess decisionStyle
+    %% Seller & Influencer Tracking in ERPNext
+    subgraph Seller_Tracking["8.1 Seller & Influencer Tracking in ERPNext"]
+        SalesTracked["Sales Tracked in ERPNext"]:::trackingStyle
+        SellerUI["Seller Dashboard (View Sales & Commissions)"]:::commissionStyle
+        InvoiceTracking["Track Invoice Payments & Withdrawals"]:::payoutStyle
+    end
 
-    roleBasedAccess --> tempRole["Users Start with Temporary Role"]
-    roleBasedAccess --> basicPlan["Basic Plan - Default Access to Vendure"]
-    roleBasedAccess --> proPlan["Pro Plan - AI Support in Zammad"]
-    roleBasedAccess --> familyPlan["Family Plan - Multi-User Access"]
+    %% Affiliate Marketing via Promo Codes
+    subgraph Affiliate_Tracking["8.2 Affiliate Marketing via Promo Codes"]
+        PromoCode["Affiliate Promo Code Issued"]:::trackingStyle
+        PurchaseMade["Purchase Made Using Promo Code"]:::trackingStyle
+        RecordSale["ERPNext Records Sale & Assigns to Affiliate"]:::commissionStyle
+        AffiliateDashboard["Affiliate Dashboard (Earnings, Sales Reports, Payout History)"]:::payoutStyle
+    end
 
-    familyPlan --> inviteUsers["Primary User Invites Additional Members"]
-    inviteUsers --> assignedProRole["Family Members Get Pro-Level Benefits"]
+    %% Connections
+    SalesTracked -->|Syncs Data| SellerUI
+    SellerUI -->|Tracks| InvoiceTracking
+
+    PromoCode -->|Used by Customer| PurchaseMade
+    PurchaseMade -->|Logs Sale in ERPNext| RecordSale
+    RecordSale -->|Updates| AffiliateDashboard
+
 
 ```
 ---
@@ -282,18 +433,29 @@ flowchart TD
 ```mermaid
 flowchart TD
     %% Define Colors
-    classDef processStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef supportStyle fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff;
+    classDef aiStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef userStyle fill:#FFC107,stroke:#333,stroke-width:2px,color:#000;
 
-    %% Commission Tracking
-    commissionTracking{"Affiliate & Seller Commission Tracking"}
-    class commissionTracking processStyle
+    %% Customer Support & AI Assistance
+    subgraph Customer_Support["9. Customer Support & AI Assistance"]
+        Zammad["Zammad (Customer Support System)"]:::supportStyle
+        ChatSupport["Live Chat & Ticketing"]:::supportStyle
+        AIEnabled["AI-Assisted Support (Pro & Family Plan Only)"]:::aiStyle
+        InteractiveTickets["AI-Generated Interactive Ticketing"]:::aiStyle
+        UserBasic["Basic Plan User (Standard Support)"]:::userStyle
+        UserPro["Pro Plan User (AI-Assisted Support)"]:::userStyle
+        UserFamily["Family Plan User (AI-Assisted Support)"]:::userStyle
+    end
 
-    commissionTracking --> sellerTracking["Seller & Influencer Sales Tracking in ERPNext"]
-    sellerTracking --> sellerDashboard["Seller Dashboard - View Sales & Commissions"]
-    sellerTracking --> invoiceManagement["Monitor Invoice Payments & Withdrawals"]
+    %% Connections
+    UserBasic -->|Uses| Zammad
+    UserBasic -->|Accesses| ChatSupport
 
-    commissionTracking --> promoTracking["Affiliate Marketing with Promo Codes"]
-    promoTracking --> affiliateDashboard["Affiliate Dashboard - Earnings, Sales, Payouts"]
+    UserPro -->|Eligible for| AIEnabled
+    UserFamily -->|Eligible for| AIEnabled
+    AIEnabled -->|Generates| InteractiveTickets
+    InteractiveTickets -->|Suggests Solutions| Zammad
 
 ```
 ---
@@ -313,29 +475,33 @@ flowchart TD
 ```mermaid
 flowchart TD
     %% Define Colors
-    classDef processStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
+    classDef syncStyle fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff;
+    classDef securityStyle fill:#F44336,stroke:#333,stroke-width:2px,color:#fff;
+    classDef roleStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
 
-    %% Customer Support
-    customerSupport{"Customer Support & AI Assistance"}
-    class customerSupport processStyle
+    %% Real-Time Role Synchronization
+    subgraph Role_Sync["10.1 Real-Time Role Synchronization with Temporal"]
+        Temporal["Temporal (Role & Permission Synchronization)"]:::syncStyle
+        UserUpgrade["User Upgrades Plan (e.g., Basic → Pro)"]:::roleStyle
+        UpdateRoles["Update User Role & Permissions"]:::roleStyle
+        AppsUpdate["All Applications Update Access in Real-Time"]:::syncStyle
+    end
 
-    customerSupport --> zammadChat["Zammad Chat - Customer Support"]
-    customerSupport --> aiSupport["AI-Assisted Support for Pro & Family Plans"]
-    aiSupport --> interactiveTickets["Interactive AI-Supported Ticketing"]
+    %% API Security & Enforcement
+    subgraph API_Security["10.2 API Gateway Enforcement"]
+        APISIX["APISIX API Gateway (Request Filtering & Security)"]:::securityStyle
+        VerifyRequest["Verify User Requests"]:::securityStyle
+        BlockUnauthorized["Block Unauthorized Role Changes"]:::securityStyle
+    end
+
+    %% Connections
+    UserUpgrade -->|Triggers| Temporal
+    Temporal -->|Syncs Role Updates| UpdateRoles
+    UpdateRoles -->|Applies Changes to| AppsUpdate
+
+    AppsUpdate -->|Validated Requests| APISIX
+    APISIX -->|Checks Permissions| VerifyRequest
+    VerifyRequest -->|If Unauthorized| BlockUnauthorized
 
 ```
 
-```mermaid
-flowchart TD
-    %% Define Colors
-    classDef processStyle fill:#2196F3,stroke:#333,stroke-width:2px,color:#fff;
-
-    %% Role & Permission Flow
-    roleSync["Real-Time Role Synchronization via Temporal"]
-    class roleSync processStyle
-
-    roleSync --> permissionUpdates["Permission Updates Across All Applications"]
-    permissionUpdates --> planUpgrade["Upgrades: Temporary Role → Paid Plan Access"]
-    planUpgrade --> accessSync["All Apps Update User Permissions"]
-
-```
