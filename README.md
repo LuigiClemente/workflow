@@ -65,13 +65,13 @@ flowchart TB
     classDef securityStyle fill:#F44336,stroke:#333,stroke-width:2px,color:#fff;
 
     %% Frontend Deployment via Vercel
-    subgraph Vercel_Deployment["🚀 2. Frontend Deployment & Application Routing"]
+    subgraph Vercel_Deployment["2. Frontend Deployment & Application Routing"]
         Vercel["Vercel (Unified Frontend Deployment)"]:::vercelStyle
         JSONConfig["Vercel JSON Config (Domain Proxy & Routing)"]:::routingStyle
     end
 
     %% Applications Routed via Vercel
-    subgraph Applications["🌍 Applications Routed Under Unified Domain"]
+    subgraph Applications["Unified Domain"]
         ERPNext["ERPNext (Business Management)"]:::appStyle
         Saleor["Saleor (E-commerce & Checkout)"]:::appStyle
         Vendure["Vendure (Subscription Plans)"]:::appStyle
@@ -83,18 +83,17 @@ flowchart TB
     end
 
     %% Security Layer
-    subgraph Security["🔒 Authentication & API Security"]
+    subgraph Security["Authentication & API Security"]
         APISIX["APISIX API Gateway (Access Control)"]:::securityStyle
         Keycloak["Keycloak (Centralized Authentication)"]:::securityStyle
     end
 
     %% Connections
-    Vercel -->|Deploys & Manages| Applications
     JSONConfig -->|Configures Routing & Proxies Requests| Vercel
-    Applications -->|Requests Authentication| Keycloak
+    Vercel -->|Manages & Routes| Applications
+    Applications -->|Sends Auth Requests| Keycloak
     Applications -->|Sends API Requests| APISIX
     APISIX -->|Validates & Secures Traffic| Keycloak
-
 
 ```
 ---
